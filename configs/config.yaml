@@ -1,0 +1,23 @@
+package_name: temporal_svdl
+output_dir: data/output
+
+# Camera parameter defaults applied to any Location that omits them.
+defaults:
+  heading: 0                        # Compass heading in degrees (0 = north, 90 = east, 180 = south, 270 = west).
+  pitch: 0                          # Vertical angle: 0 = horizontal, 90 = straight up, -90 = straight down.
+  fov: 60                           # Horizontal field of view in degrees (max 120).
+  size: 640x640                     # Image dimensions as WIDTHxHEIGHT.
+  radius: 50                        # Search radius in metres when locating the nearest pano.
+
+# Concurrency
+discovery_workers: 4                # Parallel GeoPhoto API workers.
+download_workers: 16                # Parallel Static API download workers.
+
+# Retry / back-off for failed downloads
+max_retries: 5                      # Maximum attempts per image.
+initial_backoff_seconds: 1.0        # First retry waits this long.
+max_backoff_seconds: 30.0           # Back-off is capped at this value.
+
+# Logging level: DEBUG | INFO | WARNING | ERROR
+log_level: INFO
+log_file: null
