@@ -390,5 +390,3 @@ When contributing code, please:
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE) for the full text.
-
-Copyright 2025 Ali Lesani.

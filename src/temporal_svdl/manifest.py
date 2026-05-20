@@ -111,7 +111,10 @@ def _load_pano_cache(path: Path) -> dict[str, list[HistoricalPano]]:
     if not path.exists():
         return {}
     with path.open("r", encoding="utf-8") as fh:
-        raw = json.load(fh)
+        content = fh.read().strip()
+    if not content:
+        return {}
+    raw = json.loads(content)
     return {
         entry["location_id"]: [HistoricalPano(**p) for p in entry.get("panos", [])] for entry in raw
     }
