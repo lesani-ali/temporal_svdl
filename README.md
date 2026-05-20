@@ -1,8 +1,8 @@
 # temporal-svdl
 
 <!-- [![PyPI](https://img.shields.io/pypi/v/temporal-svdl)](https://pypi.org/project/temporal-svdl/)
-[![Python](https://img.shields.io/pypi/pyversions/temporal-svdl)](https://pypi.org/project/temporal-svdl/)
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE) -->
+[![Python](https://img.shields.io/pypi/pyversions/temporal-svdl)](https://pypi.org/project/temporal-svdl/) -->
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 
 **Historical Google Street View downloader.** Fetches panoramas for the *same viewpoint* across multiple points in time.
 

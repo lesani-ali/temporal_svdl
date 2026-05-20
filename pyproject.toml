@@ -79,9 +79,11 @@ python_functions = ["test_*"]
 
 [tool.poe.tasks]
 test = "pytest --color=yes"
-lint = "ruff check --fix src/ tests/"
+lint = "ruff check src/ tests/"
+lint_fix = "ruff check --fix src/ tests/"
 format = "ruff format src/ tests/"
-check = ["format", "lint", "test"]
+check = ["format", "lint_fix", "test"]
+
 
 [tool.ruff]
 line-length = 100
