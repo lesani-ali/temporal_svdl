@@ -187,7 +187,7 @@ temporal-svdl list --json-file data/input/locations.json
 
 ### JSON batch file
 
-Each entry is a location. `target_years` or `all_dates` must be set per entry. All camera fields and `id` are optional — they fall back to `Config.defaults`.
+Each entry is a location. All camera fields and `id` are optional — they fall back to `Config.defaults`. If neither `target_years` nor `all_dates` is set, the most recent available panorama is downloaded.
 
 ```json
 [
@@ -216,7 +216,7 @@ Each entry is a location. `target_years` or `all_dates` must be set per entry. A
 | `id` | string | auto | Human-readable label. Auto-generated from coordinates if omitted. |
 | `lat` | float | — | Latitude in decimal degrees. |
 | `lng` | float | — | Longitude in decimal degrees. |
-| `target_years` | list[int] | — | Years of interest (mutually exclusive with `all_dates`). |
+| `target_years` | list[int] | `[]` | Years of interest (mutually exclusive with `all_dates`). If empty and `all_dates` is false, the latest panorama is downloaded. |
 | `all_dates` | bool | `false` | If `true`, every discovered historical panorama is downloaded. |
 | `year_from` | int | `null` | Exclude panoramas captured before this year. |
 | `year_to` | int | `null` | Exclude panoramas captured after this year. |
