@@ -106,7 +106,7 @@ class TestManifest:
 
     def test_skips_malformed_rows_on_load(self, tmp_path):
         path = tmp_path / "manifest.csv"
-        m = Manifest(path)
+        _ = Manifest(path)
         # Append a garbage row directly
         with path.open("a", encoding="utf-8") as fh:
             fh.write("bad,row,with,too,few,fields\n")
