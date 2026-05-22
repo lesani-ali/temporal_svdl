@@ -3,7 +3,7 @@ output_dir: data/output
 
 # Camera parameter defaults applied to any Location that omits them.
 defaults:
-  heading: 0                        # Compass heading in degrees (0 = north, 90 = east, 180 = south, 270 = west).
+  heading: null                     # Compass heading in degrees (0 = north, 90 = east). When None (the default), the heading is computed automatically.
   pitch: 0                          # Vertical angle: 0 = horizontal, 90 = straight up, -90 = straight down.
   fov: 60                           # Horizontal field of view in degrees (max 120).
   size: 640x640                     # Image dimensions as WIDTHxHEIGHT.

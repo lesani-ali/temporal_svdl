@@ -220,7 +220,7 @@ Each entry is a location. All camera fields and `id` are optional — they fall 
 | `all_dates` | bool | `false` | If `true`, every discovered historical panorama is downloaded. |
 | `year_from` | int | `null` | Exclude panoramas captured before this year. |
 | `year_to` | int | `null` | Exclude panoramas captured after this year. |
-| `heading` | float | 0 | Compass heading in degrees (0 = north, 90 = east). |
+| `heading` | float \| None | `null` | Compass heading in degrees (0 = north, 90 = east). When omitted (or set to `null`), the heading is computed automatically to face the target location from the Street View camera position. |
 | `pitch` | float | 0 | Vertical angle in degrees (0 = horizontal). |
 | `fov` | float | 90 | Horizontal field of view in degrees (max 120). |
 | `size` | string | `"640x640"` | Image dimensions as `WIDTHxHEIGHT`. |
@@ -242,6 +242,43 @@ https://maps.app.goo.gl/abc123
 
 ---
 
+## Automatic heading
+
+If you do not provide a `heading`, the pipeline computes it automatically so the camera faces your target location.
+
+**How it works:** after discovering panoramas, the pipeline calls the Street View Metadata API with your target coordinates to find the exact position of the nearest Street View camera on the street. It then computes the compass bearing from that camera position toward your target and uses it as the heading for all downloads at that location.
+
+This is the default behaviour — you only need to set `heading` explicitly when you want to override the direction (for example, to photograph a specific facade of a building):
+
+```json
+[
+  {
+    "lat": 43.6426,
+    "lng": -79.3871,
+    "all_dates": true
+    // heading omitted → automatically aimed at the target
+  },
+  {
+    "lat": 43.6532,
+    "lng": -79.3832,
+    "all_dates": true,
+    "heading": 270    // explicit override: face west
+  }
+]
+```
+
+From the CLI, `--heading` is optional on the `point` command for the same reason:
+
+```bash
+# heading auto-computed
+temporal-svdl point --lat 43.66 --lng -79.39 --all-dates
+
+# explicit heading
+temporal-svdl point --lat 43.66 --lng -79.39 --heading 270 --all-dates
+```
+
+---
+
 ## Configuration
 
 Create `configs/config.yaml` (or point to any YAML file with `-c`):
@@ -251,7 +288,8 @@ output_dir: data/output
 
 # Camera parameter defaults — applied to any location that omits them.
 defaults:
-  heading: 0        # Compass heading (0 = north, 90 = east).
+  # heading is omitted here → computed automatically for every location.
+  # Set an explicit value (e.g. heading: 90) to override for all locations.
   pitch: 0          # Vertical angle: 0 = horizontal.
   fov: 90           # Horizontal field of view in degrees (max 120).
   size: 640x640     # Image dimensions as WIDTHxHEIGHT.

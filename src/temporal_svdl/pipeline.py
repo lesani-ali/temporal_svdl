@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
+
+import httpx
 
 from rich.progress import (
     BarColumn,
@@ -38,6 +41,88 @@ def _output_path(output_dir: Path, loc: Location, target_year: int, pano: Histor
         f"_y{target_year}.jpg"
     )
     return output_dir / loc.id / filename
+
+
+async def _fetch_camera_location(
+    client: httpx.AsyncClient,
+    pano_id: str,
+    api_key: str,
+) -> Optional[tuple[float, float]]:
+    """Return the lat/lng of the camera via the Street View Metadata API."""
+    url = "https://maps.googleapis.com/maps/api/streetview/metadata"
+    try:
+        resp = await client.get(url, params={"pano": pano_id, "key": api_key}, timeout=10.0)
+        resp.raise_for_status()
+        data = resp.json()
+        if data.get("status") == "OK":
+            loc = data["location"]
+            return float(loc["lat"]), float(loc["lng"])
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("Metadata fetch failed for pano %s: %s", pano_id, exc)
+    return None
+
+
+async def _resolve_headings(
+    locations: list[Location],
+    panos_by_loc: dict[str, list[HistoricalPano]],
+    cfg: Config,
+    api_key: str,
+) -> list[Location]:
+    """Compute headings for locations where the user did not provide one.
+
+    For each location whose heading is None, finds the nearest Street View
+    camera position and computes the bearing FROM that camera TOWARD the
+    target (loc.lat, loc.lng).
+    """
+    from .geo import compute_bearing
+
+    unset = [loc for loc in locations if loc.heading is None]
+    if not unset:
+        return locations
+
+    logger.info("Computing heading for %d location(s) via Street View metadata…", len(unset))
+
+    # Pick the most recent pano per location for the metadata lookup.
+    pano_for_loc: dict[str, Optional[HistoricalPano]] = {
+        loc.id: (
+            max(panos_by_loc[loc.id], key=lambda p: (p.year, p.month))
+            if panos_by_loc.get(loc.id)
+            else None
+        )
+        for loc in unset
+    }
+
+    camera_latlng: dict[str, Optional[tuple[float, float]]] = {}
+    semaphore = asyncio.Semaphore(cfg.discovery_workers)
+
+    async with httpx.AsyncClient(follow_redirects=True) as client:
+
+        async def _fetch(loc_id: str, pano: HistoricalPano) -> None:
+            async with semaphore:
+                camera_latlng[loc_id] = await _fetch_camera_location(client, pano.pano_id, api_key)
+
+        await asyncio.gather(*(
+            _fetch(loc_id, pano)
+            for loc_id, pano in pano_for_loc.items()
+            if pano is not None
+        ))
+
+    resolved: list[Location] = []
+    for loc in locations:
+        if loc.heading is not None:
+            resolved.append(loc)
+            continue
+
+        latlng = camera_latlng.get(loc.id)
+        if latlng is not None:
+            bearing = round(compute_bearing(latlng[0], latlng[1], loc.lat, loc.lng), 1)
+            logger.debug("%s — heading computed as %.1f°", loc.id, bearing)
+            resolved.append(loc.model_copy(update={"heading": bearing}))
+        else:
+            logger.warning("%s — could not compute heading, defaulting to 0°", loc.id)
+            resolved.append(loc.model_copy(update={"heading": 0.0}))
+
+    return resolved
 
 
 def _plan_jobs(
@@ -216,6 +301,10 @@ async def run(
 
     if discover_only:
         return report
+
+    # Compute headings for any location where the user did not specify one.
+    locations = await _resolve_headings(locations, report.panos_by_loc, cfg, api_key)
+    report.locations = locations
 
     # Phase 2: plan
     manifest = Manifest(cfg.manifest_path)

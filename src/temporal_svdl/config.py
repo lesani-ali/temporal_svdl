@@ -17,7 +17,16 @@ _SIZE_RE = re.compile(r"^\d{2,4}x\d{2,4}$")
 class Defaults(BaseModel):
     """Default camera parameters applied to any Location field left unset."""
 
-    heading: float = Field(0.0, ge=0, lt=360, description="Compass heading (0=north, 90=east).")
+    heading: Optional[float] = Field(
+        None,
+        ge=0,
+        lt=360,
+        description=(
+            "Compass heading (0=north, 90=east). "
+            "When None (the default), the heading is computed automatically "
+            "to face the target location from the Street View camera position."
+        ),
+    )
     pitch: float = Field(0.0, ge=-90, le=90, description="Vertical angle (0=horizontal).")
     fov: float = Field(60.0, gt=0, le=120, description="Horizontal field of view in degrees.")
     size: str = Field("640x640", description="Image size as 'WIDTHxHEIGHT'.")

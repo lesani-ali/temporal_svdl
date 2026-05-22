@@ -161,11 +161,18 @@ def batch(json_file: Path, **kwargs) -> None:
 @cli.command()
 @click.option("--lat", type=float, required=True, help="Latitude  (-90 … 90).")
 @click.option("--lng", type=float, required=True, help="Longitude (-180 … 180).")
+@click.option(
+    "--heading",
+    "heading_str",
+    default=None,
+    help="Camera heading in degrees (0–360). Omit to compute automatically from the target location.",
+)
 @_temporal_options
 @_run_options
 def point(
     lat: float,
     lng: float,
+    heading_str: Optional[str],
     years: Optional[str],
     all_dates: bool,
     year_from: Optional[int],
@@ -174,15 +181,20 @@ def point(
 ) -> None:
     """Download Street View images for a single coordinate.
 
+    Heading defaults to automatic: the camera is aimed toward the target
+    location from the Street View camera position.
+
     Examples:
       temporal-svdl point --lat 43.66 --lng -79.39 --years 2015,2020,2023
       temporal-svdl point --lat 43.66 --lng -79.39 --all-dates
-      temporal-svdl point --lat 43.66 --lng -79.39 --all-dates --year-from 2015
+      temporal-svdl point --lat 43.66 --lng -79.39 --heading 90 --all-dates
     """
+    heading = float(heading_str) if heading_str is not None else None
     target_years = _parse_years(years)
     location = Location(
         lat=lat,
         lng=lng,
+        heading=heading,
         target_years=target_years,
         all_dates=all_dates,
         year_from=year_from,
@@ -345,8 +357,9 @@ def list_panos(
         table.add_column("Pano ID", style="dim")
         table.add_column("Heading", justify="right")
 
+        heading_display = "—" if loc.heading is None else f"{loc.heading:g}°"
         for i, pano in enumerate(sorted(panos, key=lambda p: p.iso), start=1):
-            table.add_row(str(i), pano.iso, pano.pano_id, f"{loc.heading:g}°")
+            table.add_row(str(i), pano.iso, pano.pano_id, heading_display)
 
         console.print(table)
         console.print(f"  [dim]Total: {len(panos)} panorama(s)[/]\n")
