@@ -267,7 +267,7 @@ async def run(
         show_progress:     Render Rich progress bars.
     """
     cfg.output_dir.mkdir(parents=True, exist_ok=True)
-    locations = [loc.fill(cfg.defaults) for loc in locations]
+    locations = [loc.fill(cfg.camera_defaults) for loc in locations]
     report = Report(locations=locations, cfg=cfg)
 
     # Phase 1: discovery

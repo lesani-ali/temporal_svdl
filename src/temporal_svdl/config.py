@@ -14,7 +14,7 @@ load_dotenv(override=False)
 _SIZE_RE = re.compile(r"^\d{2,4}x\d{2,4}$")
 
 
-class Defaults(BaseModel):
+class CameraDefaults(BaseModel):
     """Default camera parameters applied to any Location field left unset."""
 
     heading: Optional[float] = Field(
@@ -57,7 +57,7 @@ class Location(BaseModel):
         description="Exclude panos captured after this year.",
     )
 
-    # Camera overrides (fall back to Config.defaults when None)
+    # Camera overrides (fall back to Config.camera_defaults when None)
     heading: Optional[float] = Field(None, ge=0, lt=360)
     pitch: Optional[float] = Field(None, ge=-90, le=90)
     fov: Optional[float] = Field(None, gt=0, le=120)
@@ -87,7 +87,7 @@ class Location(BaseModel):
             self.id = f"loc_{self.lat:.5f}_{self.lng:.5f}".replace(".", "p").replace("-", "m")
         return self
 
-    def fill(self, defaults: Defaults) -> "Location":
+    def fill(self, defaults: CameraDefaults) -> "Location":
         """Return a copy with unset camera fields filled from *defaults*."""
         return self.model_copy(
             update={
@@ -106,8 +106,8 @@ class Config(BaseModel):
         Path("data/output"),
         description="Root directory for downloaded images and cache files.",
     )
-    defaults: Defaults = Field(
-        default_factory=Defaults,
+    camera_defaults: CameraDefaults = Field(
+        default_factory=CameraDefaults,
         description="Camera parameter fallbacks for any Location that omits them.",
     )
 

@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from temporal_svdl.config import Config, Defaults, Location
+from temporal_svdl.config import Config, CameraDefaults, Location
 
 
 # Location
@@ -42,7 +42,7 @@ class TestLocation:
         assert loc.size == "640x480"
 
     def test_fill_applies_defaults_for_unset_fields(self):
-        defaults = Defaults(heading=45.0, pitch=10.0, fov=60.0, size="320x240", radius=100)
+        defaults = CameraDefaults(heading=45.0, pitch=10.0, fov=60.0, size="320x240", radius=100)
         loc = Location(lat=43.0, lng=-79.0)
         filled = loc.fill(defaults)
         assert filled.heading == 45.0
@@ -52,7 +52,7 @@ class TestLocation:
         assert filled.radius == 100
 
     def test_fill_preserves_explicit_field_values(self):
-        defaults = Defaults(heading=45.0, fov=60.0)
+        defaults = CameraDefaults(heading=45.0, fov=60.0)
         loc = Location(lat=43.0, lng=-79.0, heading=270.0, fov=90.0)
         filled = loc.fill(defaults)
         assert filled.heading == 270.0
@@ -103,16 +103,16 @@ class TestConfig:
 
     def test_from_yaml_defaults_section(self, tmp_path):
         p = tmp_path / "cfg.yaml"
-        p.write_text("defaults:\n  heading: 90\n  fov: 60\n")
+        p.write_text("camera_defaults:\n  heading: 90\n  fov: 60\n")
         cfg = Config.from_yaml(p)
-        assert cfg.defaults.heading == 90.0
-        assert cfg.defaults.fov == 60.0
+        assert cfg.camera_defaults.heading == 90.0
+        assert cfg.camera_defaults.fov == 60.0
 
 
-# Defaults
-class TestDefaults:
+# CameraDefaults
+class TestCameraDefaults:
     def test_default_values(self):
-        d = Defaults()
+        d = CameraDefaults()
         assert d.heading is None  # None means: compute heading automatically
         assert d.pitch == 0.0
         assert d.fov == 60.0
@@ -120,29 +120,29 @@ class TestDefaults:
         assert d.radius == 50
 
     def test_explicit_heading_accepted(self):
-        d = Defaults(heading=90.0)
+        d = CameraDefaults(heading=90.0)
         assert d.heading == 90.0
 
     def test_heading_out_of_range_raises(self):
         with pytest.raises(ValidationError):
-            Defaults(heading=361.0)
+            CameraDefaults(heading=361.0)
 
 
 class TestLocationHeadingResolution:
     def test_none_heading_stays_none_when_default_also_none(self):
-        defaults = Defaults()  # heading=None
+        defaults = CameraDefaults()  # heading=None
         loc = Location(lat=43.0, lng=-79.0)
         filled = loc.fill(defaults)
         assert filled.heading is None  # pipeline will compute it
 
     def test_fill_uses_explicit_default_heading(self):
-        defaults = Defaults(heading=180.0)
+        defaults = CameraDefaults(heading=180.0)
         loc = Location(lat=43.0, lng=-79.0)
         filled = loc.fill(defaults)
         assert filled.heading == 180.0
 
     def test_location_heading_overrides_default(self):
-        defaults = Defaults(heading=90.0)
+        defaults = CameraDefaults(heading=90.0)
         loc = Location(lat=43.0, lng=-79.0, heading=270.0)
         filled = loc.fill(defaults)
         assert filled.heading == 270.0

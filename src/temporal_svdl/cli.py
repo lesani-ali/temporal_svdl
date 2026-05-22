@@ -334,7 +334,7 @@ def list_panos(
     else:
         raise click.UsageError("Provide --lat/--lng, --url, or --json-file.")
 
-    locations = [loc.fill(cfg.defaults) for loc in locations]
+    locations = [loc.fill(cfg.camera_defaults) for loc in locations]
 
     results = asyncio.run(discover_locations(locations, cfg))
 

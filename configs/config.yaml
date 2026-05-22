@@ -2,7 +2,7 @@ package_name: temporal_svdl
 output_dir: data/output
 
 # Camera parameter defaults applied to any Location that omits them.
-defaults:
+camera_defaults:
   heading: null                     # Compass heading in degrees (0 = north, 90 = east). When None (the default), the heading is computed automatically.
   pitch: 0                          # Vertical angle: 0 = horizontal, 90 = straight up, -90 = straight down.
   fov: 60                           # Horizontal field of view in degrees (max 120).

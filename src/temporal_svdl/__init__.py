@@ -38,7 +38,7 @@ from typing import Iterable, Optional, Union
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-from .config import Config, Defaults, Location, get_api_key, get_signing_secret
+from .config import Config, CameraDefaults, Location, get_api_key, get_signing_secret
 from .discovery import DiscoveryResult, HistoricalPano, discover_locations
 from .downloader import DownloadJob, DownloadResult
 from .loaders import (
@@ -58,7 +58,7 @@ except PackageNotFoundError:
 __all__ = [
     # Config
     "Config",
-    "Defaults",
+    "CameraDefaults",
     "Location",
     # Pipeline
     "Report",
@@ -182,7 +182,7 @@ async def adownload(
         year_to      — ignore panos captured after this year.
 
     Args:
-        config:            Pipeline config.  Defaults are used when omitted.
+        config:            Pipeline config.  CameraDefaults are used when omitted.
         confirm:           Prompt before downloading (pass ``False`` to skip).
         discover_only:     Stop after discovery; do not download images.
         download_only:     Skip discovery and use the cached pano list.
@@ -255,7 +255,7 @@ async def list_panos(
     else:
         raise ValueError("Provide lat+lng, url, or json_file.")
 
-    locations = [loc.fill(cfg.defaults) for loc in locations]
+    locations = [loc.fill(cfg.camera_defaults) for loc in locations]
     results = await discover_locations(locations, cfg)
 
     return {
