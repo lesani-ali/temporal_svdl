@@ -201,10 +201,9 @@ report = download(json_file="data/input/locations.json")
 Use `adownload` inside an existing async event loop:
 
 ```python
-import asyncio
 from temporal_svdl import adownload
 
-report = asyncio.run(adownload(lat=43.66, lng=-79.39, target_years=[2015, 2023]))
+report = await adownload(lat=43.66, lng=-79.39, target_years=[2015, 2023])
 ```
 
 ### `download` / `adownload` — all arguments
@@ -237,7 +236,13 @@ Discovers and returns all available panoramas without downloading anything:
 import asyncio
 from temporal_svdl import list_panos
 
+# If running in a regular Python script:
 panos = asyncio.run(list_panos(lat=43.6629, lng=-79.3957, year_from=2015))
+
+# If running inside a Jupyter notebook:
+panos = await list_panos(lat=43.6629, lng=-79.3957, year_from=2015)
+
+# Print the discovered panoramas
 for loc_id, history in panos.items():
     for p in history:
         print(p.iso, p.pano_id)

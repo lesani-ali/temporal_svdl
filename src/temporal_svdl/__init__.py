@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+from concurrent.futures import ThreadPoolExecutor
 from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Iterable, Optional, Union
@@ -218,7 +219,20 @@ async def adownload(
 
 def download(**kwargs) -> Report:
     """Synchronous wrapper around :func:`adownload`.  Accepts the same arguments."""
-    return asyncio.run(adownload(**kwargs))
+    try:
+        # Check if there is an active running event loop (e.g., Jupyter)
+        loop = asyncio.get_running_loop()
+    except RuntimeError:
+        # No loop is running; safe to use standard asyncio.run()
+        return asyncio.run(adownload(**kwargs))
+    
+    # If a loop IS running, execute the async function in a separate thread
+    # and block until it returns the result.
+    with ThreadPoolExecutor() as executor:
+        future = executor.submit(lambda: asyncio.run(adownload(**kwargs)))
+        return future.result()
+
+    
 
 
 async def list_panos(
