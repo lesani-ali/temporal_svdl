@@ -221,7 +221,7 @@ def download(**kwargs) -> Report:
     """Synchronous wrapper around :func:`adownload`.  Accepts the same arguments."""
     try:
         # Check if there is an active running event loop (e.g., Jupyter)
-        loop = asyncio.get_running_loop()
+        asyncio.get_running_loop()
     except RuntimeError:
         # No loop is running; safe to use standard asyncio.run()
         return asyncio.run(adownload(**kwargs))
