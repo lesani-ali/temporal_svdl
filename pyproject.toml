@@ -53,7 +53,6 @@ dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
     "ruff>=0.4",
-    "poethepoet>=0.29",
 ]
 
 [project.urls]
@@ -76,13 +75,6 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-
-[tool.poe.tasks]
-test = "pytest --color=yes"
-lint = "ruff check src/ tests/"
-lint_fix = "ruff check --fix src/ tests/"
-format = "ruff format src/ tests/"
-check = ["format", "lint_fix", "test"]
 
 
 [tool.ruff]
