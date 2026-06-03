@@ -22,7 +22,7 @@ from .discovery import DiscoveryResult, HistoricalPano, discover_locations
 from .downloader import DownloadJob, DownloadResult, download_all
 from .logging import get_console, get_logger
 from .manifest import Manifest, _load_pano_cache, _save_pano_cache
-from .selection import filter_by_date_range, select_panos_for_years
+from .selection import filter_by_date_range, select_unique_panos_for_years
 
 logger = get_logger(__name__)
 console = get_console()
@@ -143,7 +143,7 @@ def _plan_jobs(
             # One job per unique pano
             selections: list[tuple[int, HistoricalPano]] = [(p.year, p) for p in candidates]
         elif loc.target_years:
-            selections = list(select_panos_for_years(candidates, loc.target_years).items())
+            selections = list(select_unique_panos_for_years(candidates, loc.target_years).items())
         else:
             # No temporal selection specified: download only the most recent pano.
             if candidates:
